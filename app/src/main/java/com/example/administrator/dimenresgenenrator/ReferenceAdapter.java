@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -29,14 +30,14 @@ public class ReferenceAdapter extends RecyclerView.Adapter<ReferenceAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, final int i) {
         final Integer integer = datas.get(i);
         viewHolder.text.setText(integer + "dp");
-        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+        viewHolder.delete.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
+            public void onClick(View v) {
                 datas.remove(integer);
                 notifyItemRemoved(i);
-                return true;
             }
         });
+
     }
 
     @Override
@@ -56,10 +57,12 @@ public class ReferenceAdapter extends RecyclerView.Adapter<ReferenceAdapter.View
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView text;
+        ImageView delete;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             text = itemView.findViewById(R.id.text);
+            delete = itemView.findViewById(R.id.delete);
         }
     }
 }

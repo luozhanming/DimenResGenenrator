@@ -16,12 +16,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.blankj.utilcode.util.FileUtils;
+import com.blankj.utilcode.util.ZipUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
@@ -46,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mAdapter = new ReferenceAdapter(new ArrayList<Integer>());
-        rvReferenceSizeList.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        rvReferenceSizeList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvReferenceSizeList.setAdapter(mAdapter);
     }
 
@@ -73,11 +77,28 @@ public class MainActivity extends AppCompatActivity {
         int baseSize = Integer.parseInt(etBaseSize.getText().toString());
         final DimenResGenerator generator = new DimenResGenerator(baseSize, "dp_%d_dp");
         List<Observable<File>> list = new ArrayList<>();
-        list.add(generator.generatorDimenRes(baseSize,true));
+        list.add(generator.generatorDimenRes(baseSize, true));
+        list.add(generator.generatorDimenRes(baseSize, false));
         List<Integer> datas = mAdapter.getDatas();
         for (Integer data : datas) {
-            list.add(generator.generatorDimenRes(data,false));
+            list.add(generator.generatorDimenRes(data, false));
         }
+        Observable.merge(list)
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        FileUtils.deleteAllInDir(new File(DimenResGenerator.PATH_DIMEN_RES));
+                    }
+                })
+                .doOnComplete(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        ZipUtils.zipFile(new File(DimenResGenerator.PATH_DIMEN_RES + "dimens/"), new File(DimenResGenerator.PATH_DIMEN_RES + "dimens.zip"));
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe();
 
     }
 
@@ -97,6 +118,10 @@ public class MainActivity extends AppCompatActivity {
                     mAdapter.addReference(referenceSize);
                 }
             }).show();
+        }else if(id ==R.id.refresh){
+            mAdapter.getDatas().clear();
+            mAdapter.notifyDataSetChanged();
+            etBaseSize.setText("");
         }
         return true;
     }

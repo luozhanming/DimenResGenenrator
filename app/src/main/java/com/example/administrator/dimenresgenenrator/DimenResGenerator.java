@@ -13,11 +13,10 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 
 public class DimenResGenerator {
 
-    public static final String PATH_DIMEN_RES = Environment.getExternalStorageDirectory().getPath() + "/DimenResGenerator/";
+    public static final String PATH_DIMEN_RES = Environment.getExternalStorageDirectory().getPath() + File.separator + "DimenResGenerator" + File.separator;
     public static final String RESOURCE = "resources";
     public static final String NAME = "name";
     public static final String DIMEN = "dimen";
@@ -32,7 +31,7 @@ public class DimenResGenerator {
         this.namePattern = namePattern;
     }
 
-    public Observable<File> generatorDimenRes(final int referenceSize,boolean isBase) {
+    public Observable<File> generatorDimenRes(final int referenceSize, boolean isBase) {
         float ratio = 0;
         ratio = (float) referenceSize / baseSize;
         final float finalRatio = ratio;
@@ -95,17 +94,13 @@ public class DimenResGenerator {
             @Override
             public File apply(Object[] objects) throws Exception {
                 File file = new File(PATH_DIMEN_RES + "dimens.zip");
-                if(file.exists())file.delete();
+                if (file.exists()) file.delete();
                 if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
                 ZipUtil.compress(PATH_DIMEN_RES + "dimens/", file.getPath());
                 return file;
             }
         });
     }
-
-
-
-
 
 
     private void generateDimenTag(XmlSerializer serializer, int i, float ratio, boolean isDip) throws IOException {
